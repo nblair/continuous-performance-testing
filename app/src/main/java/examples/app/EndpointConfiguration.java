@@ -8,4 +8,7 @@ public class EndpointConfiguration extends Configuration
 {
   @JsonProperty("swagger")
   public SwaggerBundleConfiguration swagger;
+
+  @JsonProperty("exportDirectory")
+  public String exportDirectoryPath = System.getProperty("java.io.tmpdir");
 }

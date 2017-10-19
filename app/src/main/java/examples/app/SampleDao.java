@@ -1,5 +1,6 @@
 package examples.app;
 
+import java.io.IOException;
 import java.util.Collection;
 
 public interface SampleDao
@@ -13,4 +14,6 @@ public interface SampleDao
   Sample deleteSample(Long id);
 
   Collection<Sample> getSamples();
+
+  void export() throws IOException;
 }

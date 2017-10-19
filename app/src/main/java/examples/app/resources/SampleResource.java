@@ -1,5 +1,6 @@
 package examples.app.resources;
 
+import java.io.IOException;
 import java.util.Collection;
 
 import javax.inject.Singleton;
@@ -67,5 +68,12 @@ public class SampleResource
   @Timed
   public Sample delete(@PathParam("id") Long id) {
     return sampleDao.deleteSample(id);
+  }
+
+  @ApiOperation("Export database")
+  @POST
+  @Path("export")
+  public void export() throws IOException {
+    sampleDao.export();
   }
 }

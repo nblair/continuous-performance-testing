@@ -17,11 +17,14 @@ public class EndpointApplication extends Application<EndpointConfiguration>
   }
 
   public void run(final EndpointConfiguration endpointConfiguration, final Environment environment) throws Exception {
-    environment.jersey().register(new SampleResource(sampleDao()));
+    SampleDao sampleDao = new SampleDaoImpl(environment.getObjectMapper(), endpointConfiguration.exportDirectoryPath);
+    environment.jersey().register(new SampleResource(sampleDao));
+
+    environment.healthChecks().register("samples", new SampleDaoHealthCheck(sampleDao));
   }
 
   @Override
-  public void initialize(Bootstrap<EndpointConfiguration> bootstrap) {
+  public void initialize(final Bootstrap<EndpointConfiguration> bootstrap) {
     // supports loading of classpath configuration
     bootstrap.setConfigurationSourceProvider(new ResourceConfigurationSourceProvider());
 
@@ -35,9 +38,4 @@ public class EndpointApplication extends Application<EndpointConfiguration>
       }
     });
   }
-
-  protected SampleDao sampleDao() {
-    return new SampleDaoImpl();
-  }
-
 }
