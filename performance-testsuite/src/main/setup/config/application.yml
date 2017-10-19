@@ -1,0 +1,27 @@
+swagger:
+  resourcePackage: examples.app.resources
+
+exportDirectory: /opt/app/data
+
+server:
+  requestLog:
+    timeZone: UTC
+    appenders:
+      - type: file
+        currentLogFilename: /opt/app/log/access.log
+        threshold: ALL
+        #archive: true
+        #archivedLogFilenamePattern: /opt/app/log/access.%d.log.gz
+
+logging:
+  level: INFO
+  loggers:
+    examples.app: DEBUG
+  appenders:
+    - type: file
+      threshold: INFO
+      logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
+      currentLogFilename: /opt/app/log/application.log
+      #archivedLogFilenamePattern: //opt/app/log/application-%d{yyyy-MM-dd}-%i.log.gz
+      #archivedFileCount: 7
+      timeZone: UTC

@@ -1,5 +1,10 @@
 .idea
+.terraform
+.terraform.tfstate.lock.info
 *.iml
 
 dependency-reduced-pom.xml
 target
+
+terraform.tfstate
+terraform.tfstate.backup

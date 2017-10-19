@@ -3,7 +3,6 @@ package examples.app;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import examples.app.resources.SampleResource;
 import io.dropwizard.Application;
-import io.dropwizard.configuration.ResourceConfigurationSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
@@ -25,9 +24,6 @@ public class EndpointApplication extends Application<EndpointConfiguration>
 
   @Override
   public void initialize(final Bootstrap<EndpointConfiguration> bootstrap) {
-    // supports loading of classpath configuration
-    bootstrap.setConfigurationSourceProvider(new ResourceConfigurationSourceProvider());
-
     bootstrap.getObjectMapper().configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
     bootstrap.addBundle(new SwaggerBundle<EndpointConfiguration>() {
