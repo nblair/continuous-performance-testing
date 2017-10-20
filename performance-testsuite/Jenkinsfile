@@ -168,7 +168,7 @@ pipeline {
       post {
         always {
           /*dir ('performance-testsuite') {
-            sh './src/main/setup/fetch-logs.sh'
+            sh './fetch-state.sh'
           }*/
 
           archive 'performance-testsuite/target/logs/**/*'
@@ -182,9 +182,8 @@ pipeline {
           junit 'performance-testsuite/target/**/*-reports/*.xml'
         }
         /*success {
-          dir ('private/testsuite/nexus-stress-testsuite') {
-            sh "${GROOVY_HOME}/bin/groovy ./scripts/OrientDbComparer.groovy -d config -t target/dbcompare"
-            sh "${GROOVY_HOME}/bin/groovy ./scripts/OrientDbComparer.groovy -d security -t target/dbcompare"
+          dir ('performance-testsuite') {
+            sh "./check-state.sh"
           }
         }*/
       }
