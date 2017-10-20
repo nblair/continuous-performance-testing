@@ -54,6 +54,7 @@ This assumes you have a Jenkins instance available to run.
 The [Pipeline Multibranch Plugin](https://wiki.jenkins.io/display/JENKINS/Pipeline+Multibranch+Plugin) is included with
 recent versions. 
 Install [Pipeline Maven Plugin](https://wiki.jenkins.io/display/JENKINS/Pipeline+Maven+Plugin).
+Install [HTML Publisher Plugin](https://wiki.jenkins.io/display/JENKINS/HTML+Publisher+Plugin).
 
 You'll need the following to be on the path for the user running Jenkins:
 
