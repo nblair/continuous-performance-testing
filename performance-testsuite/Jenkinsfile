@@ -1,0 +1,193 @@
+#!/usr/bin/env groovy
+OWNER = 'unknown'
+
+// you can uncomment this block if you have https://wiki.jenkins-ci.org/display/JENKINS/Build+User+Vars+Plugin installed
+/*node {
+  OWNER = wrap([$class: 'BuildUser']) {
+    return env.BUILD_USER_EMAIL
+  }
+}*/
+
+properties(
+  [
+    parameters (
+      [
+        string(
+            name: 'java_max_mem',
+            defaultValue: '128m',
+            description: 'JVM max heap, -Xmx'
+        ),
+        string(
+            name: 'java_min_mem',
+            defaultValue: '128m',
+            description: 'JVM min heap, -Xms'
+        ),
+        string(
+            name: 'duration',
+            defaultValue: '2 minutes',
+            description: 'How long to run the gatling stress test, as a Scala duration'
+        ),
+        string(
+            name: 'ramp',
+            defaultValue: '10 seconds',
+            description: 'How long gatling should take to create the simulation worker threads, as a Scala duration'
+        ),
+        string(
+            name: 'threads',
+            defaultValue: '4',
+            description: 'How many gatling worker threads to create'
+        ),
+        string(
+            name: 'sampleNameSize',
+            defaultValue: '12',
+            description: 'How long of a name to create'
+        ),
+        string (
+            name: 'workdir_volumeiops',
+            defaultValue: '500',
+            description: 'AWS EBS IOPS for the /opt/app volume'
+        ),
+        string (
+            name: 'workdir_volumesize',
+            defaultValue: '10',
+            description: 'Size of the /opt/app volume, in GB'
+        ),
+        choice (
+            name: 'workdir_volumetype',
+            choices: ['gp2', 'io1', 'st1'].join('\n'),
+            description: 'The type of EBS volume that /opt/app is mounted on'
+        )
+      ]
+    ),
+    pipelineTriggers([])
+  ]
+)
+
+pipeline {
+  agent any
+
+  environment {
+    TF_VAR_build_key = "${env.BUILD_TAG}"
+    TF_VAR_java_min_heap = "${params.java_min_mem}"
+    TF_VAR_java_max_heap = "${params.java_max_mem}"
+    TF_VAR_java_max_direct_memory = "${params.java_direct_mem}"
+    TF_VAR_data_volume_size = "${params.workdir_volumesize}"
+    TF_VAR_data_volume_type = "${params.workdir_volumetype}"
+    TF_VAR_data_volume_iops = "${params.workdir_volumeiops}"
+    TF_VAR_runner = "${OWNER}"
+  }
+  stages {
+
+    stage('Build') {
+      steps {
+        checkout scm
+
+        //disable artifactsPublisher for this step since we don't need to keep the jars after the build is done
+        withMaven(options: [ artifactsPublisher(disabled: true) ] ) {
+          // fast build, skipping tests
+          sh "mvn clean install -DskipTests=true"
+        }
+
+        // places app jar in performance-testsuite/target/dependency
+        withMaven() {
+          sh "mvn dependency:copy-dependencies -pl :performance-testsuite"
+        }
+      }
+    }
+
+    stage ('Environment') {
+      steps {
+        dir ('performance-testsuite') {
+          // sets up provider plugins
+          sh 'terraform init'
+
+          // spins up environment undertest
+          sh 'terraform apply'
+
+          // capture a copy of terraform outputs
+          sh "terraform output -json > target/terraformOutput.json"
+
+          // configure gatling (sources node IP from terraform output)
+          sh """
+          ./configure-gatling.sh \
+            -c ${params.sampleNameSize} \
+            -d \"${params.duration}\" \
+            -m \"${params.ramp}\" \
+            -t ${params.threads} 
+          """
+        }
+      }
+      post {
+        always {
+          archive 'performance-testsuite/terraform.tfstate'
+          archive 'performance-testsuite/target/terraformOutput.json'
+          archive 'performance-testsuite/src/test/resources/application.conf'
+        }
+        failure {
+          dir ('performance-testsuite') {
+            sh 'terraform destroy --force'
+          }
+        }
+      }
+    }
+
+    stage ('Simulation') {
+      steps {
+        parallel (
+            "gatling": {
+              withMaven( options: [ artifactsPublisher(disabled: true) ] ) {
+                // gatling simulation
+                dir ('performance-testsuite') {
+                  // wait for host to come up
+                  sh "./wait-for.sh"
+
+                  sh "mvn package verify -P gatling"
+
+                  // gatling generates a folder with a timestamp, rename it something predictable
+                  sh "OUTPUT=\$(ls -t target/gatling/results/ | head -1) && mv target/gatling/results/\$OUTPUT target/gatling/results/${env.BUILD_TAG}"
+                }
+
+                // capture gatling report
+                publishHTML (
+                    target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: false,
+                        keepAll: true,
+                        reportDir: "performance-testsuite/target/gatling/results/${env.BUILD_TAG}",
+                        reportFiles: 'index.html',
+                        reportName: "Gatling Report"
+                    ]
+                )
+              }
+            },
+            "manipulator": {
+              echo "ready to manipulate while simulation is running"
+            }
+        )
+      }
+      post {
+        always {
+          /*dir ('performance-testsuite') {
+            sh './src/main/setup/fetch-logs.sh'
+          }*/
+
+          archive 'performance-testsuite/target/logs/**/*'
+
+          // fetch-logs.sh must return 0 in order to guarantee that this command is invoked
+          dir ('performance-testsuite') {
+            sh 'terraform destroy --force'
+          }
+
+          // it-reports and surefire-reports
+          junit 'performance-testsuite/target/**/*-reports/*.xml'
+        }
+        /*success {
+          dir ('private/testsuite/nexus-stress-testsuite') {
+            sh "${GROOVY_HOME}/bin/groovy ./scripts/OrientDbComparer.groovy -d config -t target/dbcompare"
+            sh "${GROOVY_HOME}/bin/groovy ./scripts/OrientDbComparer.groovy -d security -t target/dbcompare"
+          }
+        }*/
+      }
+    }
+  }
+}

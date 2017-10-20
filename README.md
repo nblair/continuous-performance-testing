@@ -51,7 +51,14 @@ export TF_VAR_runner=`someone@somewhere.com`
 
 This assumes you have a Jenkins instance available to run.
 
-Install the [Pipeline Multibranch Plugin](https://wiki.jenkins.io/display/JENKINS/Pipeline+Multibranch+Plugin).
+The [Pipeline Multibranch Plugin](https://wiki.jenkins.io/display/JENKINS/Pipeline+Multibranch+Plugin) is included with
+recent versions. 
+Install [Pipeline Maven Plugin](https://wiki.jenkins.io/display/JENKINS/Pipeline+Maven+Plugin).
+
+You'll need the following to be on the path for the user running Jenkins:
+
+1. `terraform`
+2. `jq`
 
 ## Create Jenkins build
 
