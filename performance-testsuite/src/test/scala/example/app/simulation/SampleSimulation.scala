@@ -35,14 +35,26 @@ class SampleSimulation extends Simulation
       http("POST new sample")
         .post("/sample")
         .body(StringBody("{ \"name\": \"${name}\" }"))
-        .check(
-          jsonPath("$.id").saveAs("id")
-        )
+        .check(jsonPath("$.id").saveAs("id"))
     ).exec(
       http("GET sample by id")
         .get("/sample/${id}")
         .check(jsonPath("$.id").is("${id}"))
         .check(jsonPath("$.name").is("${name}"))
+    ).exec(
+      http("PUT updated sample")
+          .put("/sample/${id}")
+          .body(StringBody("{ \"name\": \"${name}_updated\", \"id\": ${id} }"))
+          .check(jsonPath("$.id").is("${id}"))
+          .check(jsonPath("$.name").is("${name}_updated"))
+    ).exec(
+      http("GET updated sample")
+          .get("/sample/${id}")
+          .check(jsonPath("$.id").is("${id}"))
+          .check(jsonPath("$.name").is("${name}_updated"))
+    ).exec(
+      http("DELETE sample")
+          .delete("/sample/${id}")
     )
   }
 
