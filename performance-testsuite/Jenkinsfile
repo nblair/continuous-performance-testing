@@ -24,12 +24,12 @@ properties(
         ),
         string(
             name: 'duration',
-            defaultValue: '2 minutes',
+            defaultValue: '30 seconds',
             description: 'How long to run the gatling stress test, as a Scala duration'
         ),
         string(
             name: 'ramp',
-            defaultValue: '10 seconds',
+            defaultValue: '2 seconds',
             description: 'How long gatling should take to create the simulation worker threads, as a Scala duration'
         ),
         string(
@@ -167,11 +167,12 @@ pipeline {
       }
       post {
         always {
-          /*dir ('performance-testsuite') {
+          dir ('performance-testsuite') {
+            // it is important that this script always return 0, even if it doesn't complete, so terraform destroy fires
             sh './fetch-state.sh'
-          }*/
+          }
 
-          archive 'performance-testsuite/target/logs/**/*'
+          archive 'performance-testsuite/target/log/**/*'
 
           // fetch-logs.sh must return 0 in order to guarantee that this command is invoked
           dir ('performance-testsuite') {
@@ -179,13 +180,13 @@ pipeline {
           }
 
           // it-reports and surefire-reports
-          junit 'performance-testsuite/target/**/*-reports/*.xml'
+          //junit 'performance-testsuite/target/**/*-reports/*.xml'
         }
-        /*success {
+        success {
           dir ('performance-testsuite') {
             sh "./check-state.sh"
           }
-        }*/
+        }
       }
     }
   }
