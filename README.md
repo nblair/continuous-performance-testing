@@ -1,7 +1,7 @@
 # continuous-peformance-testing
 
 This project contains example code demonstrating the capabilities described during my All Day Devops 2017 talk
-title 'Continuous Performance Testing'.
+titled 'Continuous Performance Testing'.
 
 ## Developer Requirements
 
