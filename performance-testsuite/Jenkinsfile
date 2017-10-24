@@ -179,8 +179,8 @@ pipeline {
             sh 'terraform destroy --force'
           }
 
-          // it-reports and surefire-reports
-          //junit 'performance-testsuite/target/**/*-reports/*.xml'
+          // gatling creates a junit assertions.xml at target/gatling/results/*/js/assertions.xml
+          junit 'performance-testsuite/target/gatling/**/assertions.xml'
         }
         success {
           dir ('performance-testsuite') {
