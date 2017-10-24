@@ -29,7 +29,7 @@ If you want to run everything via Jenkins:
 
 In one terminal:
 
-> mvn clean install && java -jar app/target/app-0.0.1-SNAPSHOT.jar server app/src/main/resources/application-defaults.yml
+> mvn clean install && java -jar app/target/app-0.1.0.jar server app/src/main/resources/application-defaults.yml
 
 In another terminal:
 
