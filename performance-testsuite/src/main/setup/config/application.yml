@@ -1,7 +1,8 @@
 swagger:
   resourcePackage: examples.app.resources
 
-exportDirectory: /opt/app/data
+# drop in the log file so we can transfer it with fetch-state easily
+exportDirectory: /opt/app/log
 
 server:
   requestLog:
@@ -21,4 +22,4 @@ logging:
       threshold: INFO
       logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
       currentLogFilename: /opt/app/log/application.log
-      archivedLogFilenamePattern: //opt/app/log/application-%d{yyyy-MM-dd}.log.gz
+      archivedLogFilenamePattern: //\opt/app/log/application-%d{yyyy-MM-dd}.log.gz

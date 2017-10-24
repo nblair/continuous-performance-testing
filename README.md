@@ -3,7 +3,7 @@
 This project contains example code demonstrating the capabilities described during my All Day Devops 2017 talk
 titled 'Continuous Performance Testing'.
 
-## Developer Requirements
+## Requirements
 
 The requirements get progressively steeper the more of the example you wish to run:
 
@@ -65,7 +65,7 @@ export TF_VAR_runner=`someone@somewhere.com`
 The [Pipeline Multibranch Plugin](https://wiki.jenkins.io/display/JENKINS/Pipeline+Multibranch+Plugin) is included with
 recent versions. 
 
-## Create Jenkins build
+### Create Jenkins build
 
 1. Log into your Jenkins instance
 2. Create a new job using the Pipeline Multibranch type
@@ -77,5 +77,3 @@ recent versions.
 Licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
 Happy stress testing!
-
-
